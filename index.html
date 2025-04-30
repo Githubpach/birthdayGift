@@ -73,7 +73,7 @@
 
   <div id="main-content">
     <h1>Happy Birthday, My Love!</h1>
-    <p>
+     <p>
       You know, it has never been easy for us to get to where we are today. In a world full of mistakes and regrets, only the Lord knows our true path and journey.<br><br>
       And there’s a kind of love that God only Knows....<br><br>
       As you celebrate another year of life, I pray that God takes care of you, grants you wisdom, knowledge, strength, success, and many reasons to keep trusting in Him.<br><br>
@@ -115,8 +115,14 @@
         const box = document.createElement("div");
         box.classList.add("gift-box");
         box.setAttribute("data-gift", gift);
-        box.textContent = revealedGifts.includes(gift) ? gift : "???";
-        if (revealedGifts.includes(gift)) box.classList.add("revealed");
+
+        if (revealedGifts.includes(gift)) {
+          box.textContent = gift;
+          box.classList.add("revealed");
+        } else {
+          box.textContent = "???";
+        }
+
         container.appendChild(box);
       });
       attachBoxEvents();
@@ -130,8 +136,6 @@
 
           const gift = box.getAttribute("data-gift");
           revealedGifts.push(gift);
-          box.textContent = gift;
-          box.classList.add("revealed");
           selections++;
 
           // Send selection to Google Sheets
@@ -140,11 +144,14 @@
             mode: 'no-cors'
           });
 
-          // After first pick, shuffle the rest
+          // After first pick, shuffle and re-render
           if (selections === 1 && !hasShuffled) {
             hasShuffled = true;
             const remaining = allGifts.filter(g => !revealedGifts.includes(g));
             renderBoxes(shuffleArray([...revealedGifts, ...remaining]));
+          } else {
+            // Just re-render to update view
+            renderBoxes([...revealedGifts, ...allGifts.filter(g => !revealedGifts.includes(g))]);
           }
         });
       });
