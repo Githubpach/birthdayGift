@@ -57,6 +57,7 @@
       cursor: pointer;
       transition: transform 0.2s;
       font-weight: bold;
+      text-align: center;
     }
     .gift-box:hover {
       transform: scale(1.05);
@@ -74,29 +75,30 @@
     <h1>Happy Birthday, My Love!</h1>
     <p>
       You know, it has never been easy for us to get to where we are today. In a world full of mistakes and regrets, only the Lord knows our true path and journey.<br><br>
-      And there’s a kind of love — the kind only He understands.<br><br>
-      As you celebrate another year of life, I pray that God takes care of you, grants you wisdom, knowledge, strength, success, and countless reasons to keep trusting in Him.<br><br>
-      We were meant to settle this with rock-paper-scissors, but hey… let’s have a little fun instead 😂😂<br><br>
-      <strong>Only your first three attempts will count — so choose wisely!</strong><br>
+      And there’s a kind of love that God only Knows....<br><br>
+      As you celebrate another year of life, I pray that God takes care of you, grants you wisdom, knowledge, strength, success, and many reasons to keep trusting in Him.<br><br>
+      We were meant to settle this with rock-paper-scissors, but hey, my Ọkọ…, let’s have a little fun instead 😂😂<br><br>
+      <strong>Only your first three attempts will count, so choose wisely!</strong><br>
       Let the fun begin... 💖
     </p>
 
     <h2>Pick 3 of your birthday surprises:</h2>
-    <div class="box-container" id="box-container">
-      <!-- Boxes will be generated dynamically -->
-    </div>
+    <div class="box-container" id="box-container"></div>
   </div>
 
   <script>
-    const gifts = [
+    const allGifts = [
       "Chips & Chicken",
       "Big Chocolate",
       "Simba",
       "Sealed Water",
       "Ice Cream"
     ];
-
     const webhookURL = "https://script.google.com/macros/s/AKfycbwyP7oVp4I2vRh514mP_hQ46NCFW69r6IfXTzjp-J78iVnVT8S8HLleQ3CO_6A3uzvVzw/exec";
+
+    let selections = 0;
+    let hasShuffled = false;
+    let revealedGifts = [];
 
     function shuffleArray(array) {
       for (let i = array.length - 1; i > 0; i--) {
@@ -106,55 +108,53 @@
       return array;
     }
 
-    function createBoxes(giftList) {
+    function renderBoxes(giftList) {
       const container = document.getElementById("box-container");
       container.innerHTML = "";
       giftList.forEach(gift => {
-        const div = document.createElement("div");
-        div.classList.add("gift-box");
-        div.textContent = "???";
-        div.setAttribute("data-gift", gift);
-        container.appendChild(div);
+        const box = document.createElement("div");
+        box.classList.add("gift-box");
+        box.setAttribute("data-gift", gift);
+        box.textContent = revealedGifts.includes(gift) ? gift : "???";
+        if (revealedGifts.includes(gift)) box.classList.add("revealed");
+        container.appendChild(box);
       });
+      attachBoxEvents();
     }
 
-    setTimeout(() => {
-      document.getElementById('loader').style.display = 'none';
-      document.getElementById('main-content').style.display = 'flex';
-      createBoxes(gifts);
-      setupGiftLogic();
-    }, 5000);
+    function attachBoxEvents() {
+      const boxes = document.querySelectorAll(".gift-box");
+      boxes.forEach(box => {
+        box.addEventListener("click", () => {
+          if (selections >= 3 || box.classList.contains("revealed")) return;
 
-    function setupGiftLogic() {
-      let selections = 0;
-      let hasShuffled = false;
-
-      document.querySelectorAll('.gift-box').forEach(box => {
-        box.addEventListener('click', () => {
-          if (selections >= 3 || box.classList.contains('revealed')) return;
-
-          const gift = box.getAttribute('data-gift');
+          const gift = box.getAttribute("data-gift");
+          revealedGifts.push(gift);
           box.textContent = gift;
-          box.classList.add('revealed');
+          box.classList.add("revealed");
           selections++;
 
-          // Send to Google Sheet
+          // Send selection to Google Sheets
           fetch(`${webhookURL}?gift=${encodeURIComponent(gift)}`, {
             method: 'POST',
             mode: 'no-cors'
           });
 
-          // Shuffle after first selection only
+          // After first pick, shuffle the rest
           if (selections === 1 && !hasShuffled) {
             hasShuffled = true;
-            const revealedGifts = [...document.querySelectorAll('.gift-box.revealed')].map(el => el.getAttribute('data-gift'));
-            const remaining = gifts.filter(g => !revealedGifts.includes(g));
-            createBoxes(shuffleArray([...revealedGifts, ...remaining]));
-            setupGiftLogic(); // re-attach listeners
+            const remaining = allGifts.filter(g => !revealedGifts.includes(g));
+            renderBoxes(shuffleArray([...revealedGifts, ...remaining]));
           }
         });
       });
     }
+
+    setTimeout(() => {
+      document.getElementById("loader").style.display = "none";
+      document.getElementById("main-content").style.display = "flex";
+      renderBoxes(allGifts);
+    }, 5000);
   </script>
 </body>
 </html>
