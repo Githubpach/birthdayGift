@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Happy Birthday, My Love</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #fff0f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      overflow: hidden;
+      transition: background 1s;
+    }
+    .loader {
+      font-size: 3rem;
+      animation: pulse 1s infinite;
+    }
+    @keyframes pulse {
+      0% { opacity: 0.2; }
+      50% { opacity: 1; }
+      100% { opacity: 0.2; }
+    }
+    #main-content {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 2rem;
+    }
+    h1 {
+      font-size: 2.5rem;
+      color: #c2185b;
+    }
+    p {
+      font-size: 1.2rem;
+      color: #444;
+      max-width: 600px;
+    }
+    .box-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 1rem;
+      margin-top: 2rem;
+      width: 100%;
+      max-width: 500px;
+    }
+    .gift-box {
+      background: #ffe0e6;
+      padding: 1rem;
+      border-radius: 15px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      cursor: pointer;
+      transition: transform 0.2s;
+      font-weight: bold;
+    }
+    .gift-box:hover {
+      transform: scale(1.05);
+    }
+    .revealed {
+      background: #f8bbd0;
+      cursor: default;
+    }
+  </style>
+</head>
+<body>
+  <div class="loader" id="loader">❤️❤️❤️❤️❤️</div>
+
+  <div id="main-content">
+    <h1>Happy Birthday, My Love!</h1>
+    <p>
+      You light up my world in the most beautiful way. Your love, your smile, your brilliance — they all make me fall deeper every day.
+      Thank you for being my partner in life and in tech. I cherish every moment with you.
+    </p>
+
+    <h2>Pick 3 of your birthday surprises:</h2>
+    <div class="box-container">
+      <div class="gift-box" data-gift="Chips & Chicken">???</div>
+      <div class="gift-box" data-gift="Big Chocolate">???</div>
+      <div class="gift-box" data-gift="Simba">???</div>
+      <div class="gift-box" data-gift="Sealed Water">???</div>
+      <div class="gift-box" data-gift="Ice Cream">???</div>
+    </div>
+  </div>
+
+  <script>
+    setTimeout(() => {
+      document.getElementById('loader').style.display = 'none';
+      document.getElementById('main-content').style.display = 'flex';
+    }, 5000);
+
+    let selections = 0;
+    const boxes = document.querySelectorAll('.gift-box');
+    const webhookURL = "https://script.google.com/macros/s/AKfycbwyP7oVp4I2vRh514mP_hQ46NCFW69r6IfXTzjp-J78iVnVT8S8HLleQ3CO_6A3uzvVzw/exec";
+
+    boxes.forEach(box => {
+      box.addEventListener('click', () => {
+        if (selections >= 3 || box.classList.contains('revealed')) return;
+        const gift = box.getAttribute('data-gift');
+        box.textContent = gift;
+        box.classList.add('revealed');
+        selections++;
+
+        // Send data to Google Sheets via Webhook
+        fetch(`${webhookURL}?gift=${encodeURIComponent(gift)}`, {
+          method: 'POST',
+          mode: 'no-cors'
+        });
+      });
+    });
+  </script>
+</body>
+</html>
