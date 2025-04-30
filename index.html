@@ -73,45 +73,88 @@
   <div id="main-content">
     <h1>Happy Birthday, My Love!</h1>
     <p>
-      You light up my world in the most beautiful way. Your love, your smile, your brilliance — they all make me fall deeper every day.
-      Thank you for being my partner in life and in tech. I cherish every moment with you.
+      You know, it has never been easy for us to get to where we are today. In a world full of mistakes and regrets, only the Lord knows our true path and journey.<br><br>
+      And there’s a kind of love — the kind only He understands.<br><br>
+      As you celebrate another year of life, I pray that God takes care of you, grants you wisdom, knowledge, strength, success, and countless reasons to keep trusting in Him.<br><br>
+      We were meant to settle this with rock-paper-scissors, but hey… let’s have a little fun instead 😂😂<br><br>
+      <strong>Only your first three attempts will count — so choose wisely!</strong><br>
+      Let the fun begin... 💖
     </p>
 
     <h2>Pick 3 of your birthday surprises:</h2>
-    <div class="box-container">
-      <div class="gift-box" data-gift="Chips & Chicken">???</div>
-      <div class="gift-box" data-gift="Big Chocolate">???</div>
-      <div class="gift-box" data-gift="Simba">???</div>
-      <div class="gift-box" data-gift="Sealed Water">???</div>
-      <div class="gift-box" data-gift="Ice Cream">???</div>
+    <div class="box-container" id="box-container">
+      <!-- Boxes will be generated dynamically -->
     </div>
   </div>
 
   <script>
+    const gifts = [
+      "Chips & Chicken",
+      "Big Chocolate",
+      "Simba",
+      "Sealed Water",
+      "Ice Cream"
+    ];
+
+    const webhookURL = "https://script.google.com/macros/s/AKfycbwyP7oVp4I2vRh514mP_hQ46NCFW69r6IfXTzjp-J78iVnVT8S8HLleQ3CO_6A3uzvVzw/exec";
+
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function createBoxes(giftList) {
+      const container = document.getElementById("box-container");
+      container.innerHTML = "";
+      giftList.forEach(gift => {
+        const div = document.createElement("div");
+        div.classList.add("gift-box");
+        div.textContent = "???";
+        div.setAttribute("data-gift", gift);
+        container.appendChild(div);
+      });
+    }
+
     setTimeout(() => {
       document.getElementById('loader').style.display = 'none';
       document.getElementById('main-content').style.display = 'flex';
+      createBoxes(gifts);
+      setupGiftLogic();
     }, 5000);
 
-    let selections = 0;
-    const boxes = document.querySelectorAll('.gift-box');
-    const webhookURL = "https://script.google.com/macros/s/AKfycbwyP7oVp4I2vRh514mP_hQ46NCFW69r6IfXTzjp-J78iVnVT8S8HLleQ3CO_6A3uzvVzw/exec";
+    function setupGiftLogic() {
+      let selections = 0;
+      let hasShuffled = false;
 
-    boxes.forEach(box => {
-      box.addEventListener('click', () => {
-        if (selections >= 3 || box.classList.contains('revealed')) return;
-        const gift = box.getAttribute('data-gift');
-        box.textContent = gift;
-        box.classList.add('revealed');
-        selections++;
+      document.querySelectorAll('.gift-box').forEach(box => {
+        box.addEventListener('click', () => {
+          if (selections >= 3 || box.classList.contains('revealed')) return;
 
-        // Send data to Google Sheets via Webhook
-        fetch(`${webhookURL}?gift=${encodeURIComponent(gift)}`, {
-          method: 'POST',
-          mode: 'no-cors'
+          const gift = box.getAttribute('data-gift');
+          box.textContent = gift;
+          box.classList.add('revealed');
+          selections++;
+
+          // Send to Google Sheet
+          fetch(`${webhookURL}?gift=${encodeURIComponent(gift)}`, {
+            method: 'POST',
+            mode: 'no-cors'
+          });
+
+          // Shuffle after first selection only
+          if (selections === 1 && !hasShuffled) {
+            hasShuffled = true;
+            const revealedGifts = [...document.querySelectorAll('.gift-box.revealed')].map(el => el.getAttribute('data-gift'));
+            const remaining = gifts.filter(g => !revealedGifts.includes(g));
+            createBoxes(shuffleArray([...revealedGifts, ...remaining]));
+            setupGiftLogic(); // re-attach listeners
+          }
         });
       });
-    });
+    }
   </script>
 </body>
 </html>
